@@ -17,6 +17,7 @@ import {
   Plus,
   Mic,
   Type,
+  Maximize2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -332,6 +333,7 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
   const [flashcardCorrect, setFlashcardCorrect] = React.useState(0);
   const [flashcardIncorrect, setFlashcardIncorrect] = React.useState(0);
   const [flashcardSkipped, setFlashcardSkipped] = React.useState(0);
+  const [viewMode, setViewMode] = React.useState("list"); // "list" or "fullscreen"
   const startXRef = React.useRef(0);
   const startWidthRef = React.useRef(PANEL_WIDTH_DEFAULT);
 
@@ -387,6 +389,7 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
     setFlashcardCorrect(0);
     setFlashcardIncorrect(0);
     setFlashcardSkipped(0);
+    setViewMode("list");
   }, [selectedFile]);
 
   React.useEffect(() => {
@@ -467,8 +470,8 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
     );
   }
 
-  // Full-screen flashcard: one card at a time, Space to show answer (no click)
-  if (allQuestions.length > 0) {
+  // Full-screen flashcard mode: one card at a time, Space to show answer
+  if (viewMode === "fullscreen" && allQuestions.length > 0) {
     return (
       <FullScreenFlashcard
         questions={allQuestions}
@@ -483,7 +486,7 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
             setFlashcardIndex((i) => i - 1);
           }
         }}
-        onBack={selectedFile ? onBack : undefined}
+        onBack={() => setViewMode("list")}
         correctCount={flashcardCorrect}
         incorrectCount={flashcardIncorrect}
         skippedCount={flashcardSkipped}
@@ -673,6 +676,19 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
+            <span className="h-4 w-px bg-gray-300" aria-hidden />
+            {/* Full Screen button */}
+            <button
+              onClick={() => {
+                setFlashcardIndex(0);
+                setViewMode("fullscreen");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium transition-colors"
+              title="Enter full screen flashcard mode"
+            >
+              <Maximize2 className="h-4 w-4" />
+              Full Screen
+            </button>
           </div>
         </div>
       </div>
