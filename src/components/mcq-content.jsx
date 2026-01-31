@@ -309,7 +309,8 @@ function FullScreenFlashcard({
 
         {!answerVisible && (
           <p className="mt-6 text-sm text-gray-400 text-center">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-gray-200 font-mono text-xs">Space</kbd> to show answer
+            <span className="hidden sm:inline">Press <kbd className="px-1.5 py-0.5 rounded bg-gray-200 font-mono text-xs">Space</kbd> to show answer</span>
+            <span className="sm:hidden">Tap to show answer</span>
           </p>
         )}
       </div>
@@ -499,8 +500,8 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
       {/* Main Question Area */}
       <div className="flex-1 flex flex-col relative">
         {/* Questions Grid */}
-        <div className="flex-1 overflow-auto p-6 pb-10">
-          <div className="max-w-4xl mx-auto space-y-4">
+        <div className="flex-1 overflow-auto p-3 sm:p-6 pb-32 sm:pb-20">
+          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
             {currentQuestions.length === 0 ? (
               <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
                 <p className="text-gray-600 font-medium">
@@ -624,71 +625,75 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
           </div>
         </div>
 
-        {/* Pagination - fixed at bottom, visible when scrolling */}
-        <div className="fixed bottom-2 left-0 right-0 flex justify-center pointer-events-none z-40">
-          <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3 text-sm text-gray-700 bg-white border border-gray-300 rounded-xl px-4 py-2.5 shadow-md">
-            {/* Progress filter: All / Done / Not done */}
-            <div className="flex items-center gap-1">
+        {/* Pagination - fixed at bottom, mobile-friendly layout */}
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none z-40 p-2 sm:p-2">
+          <div className="pointer-events-auto w-full sm:w-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-sm text-gray-700 bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-lg mx-2 sm:mx-0">
+            {/* Mobile: Two rows layout */}
+            {/* Row 1: Navigation + Full Screen */}
+            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0}
+                  className={cn(
+                    "flex items-center justify-center h-9 w-9 sm:w-auto sm:px-2 sm:py-1 rounded-md transition-colors",
+                    currentPage === 0
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200"
+                  )}
+                >
+                  <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Back</span>
+                </button>
+                <span className="px-2 tabular-nums font-medium text-gray-800 min-w-[3rem] text-center">
+                  {currentPage + 1} / {totalPages}
+                </span>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage >= totalPages - 1}
+                  className={cn(
+                    "flex items-center justify-center h-9 w-9 sm:w-auto sm:px-2 sm:py-1 rounded-md transition-colors",
+                    currentPage >= totalPages - 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200"
+                  )}
+                >
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
+                </button>
+              </div>
+              <span className="hidden sm:block h-4 w-px bg-gray-300" aria-hidden />
+              {/* Full Screen button - icon only on mobile */}
+              <button
+                onClick={() => {
+                  setFlashcardIndex(0);
+                  setViewMode("fullscreen");
+                }}
+                className="flex items-center justify-center gap-1.5 h-9 w-9 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 font-medium transition-colors"
+                title="Enter full screen flashcard mode"
+              >
+                <Maximize2 className="h-5 w-5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Full Screen</span>
+              </button>
+            </div>
+            {/* Row 2 on mobile / same row on desktop: Progress filter */}
+            <span className="hidden sm:block h-4 w-px bg-gray-300" aria-hidden />
+            <div className="flex items-center gap-1 w-full sm:w-auto justify-center">
               {PROGRESS_FILTERS.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setProgressFilter(f.id)}
                   className={cn(
-                    "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                    "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex-1 sm:flex-none",
                     progressFilter === f.id
                       ? "bg-gray-800 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300"
                   )}
                 >
                   {f.label}
                 </button>
               ))}
             </div>
-            <span className="h-4 w-px bg-gray-300" aria-hidden />
-            <div className="flex items-center gap-1">
-              <button
-                onClick={handlePrevPage}
-                disabled={currentPage === 0}
-                className={cn(
-                  "flex items-center gap-0.5 px-2 py-1 rounded-md transition-colors",
-                  currentPage === 0
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                )}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </button>
-              <span className="px-2 tabular-nums font-medium text-gray-800 min-w-[3rem] text-center">
-                {currentPage + 1} / {totalPages}
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages - 1}
-                className={cn(
-                  "flex items-center gap-0.5 px-2 py-1 rounded-md transition-colors",
-                  currentPage >= totalPages - 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                )}
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-            <span className="h-4 w-px bg-gray-300" aria-hidden />
-            {/* Full Screen button */}
-            <button
-              onClick={() => {
-                setFlashcardIndex(0);
-                setViewMode("fullscreen");
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium transition-colors"
-              title="Enter full screen flashcard mode"
-            >
-              <Maximize2 className="h-4 w-4" />
-              Full Screen
-            </button>
           </div>
         </div>
       </div>
@@ -697,50 +702,66 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
       {!sidebarVisible && (
         <button
           onClick={() => setSidebarVisible(true)}
-          className="fixed bottom-4 right-4 z-50 w-16 h-16 rounded-2xl rounded-br-xl border-2 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors shadow-[0_4px_12px_rgba(0,0,0,0.08)] animate-border-subtle"
+          className="fixed bottom-20 sm:bottom-4 right-3 sm:right-4 z-50 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl rounded-br-xl border-2 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-800 active:bg-gray-100 transition-colors shadow-[0_4px_12px_rgba(0,0,0,0.08)] animate-border-subtle"
           aria-label="Show explanation panel"
           title="Show explanation"
         >
           <img
             src="https://img.icons8.com/3d-fluency/94/bard.png"
             alt="AI"
-            className="h-9 w-9 object-contain"
+            className="h-8 w-8 sm:h-9 sm:w-9 object-contain"
           />
         </button>
       )}
 
-      {/* AI Explanation Sidebar - when open; aligned to bottom so no white strip below */}
+      {/* AI Explanation Sidebar - full screen on mobile, side panel on desktop */}
       {sidebarVisible && (
-      <div
-        className={cn(
-          "shrink-0 self-end mb-4 mr-4 min-h-[360px] max-h-[calc(100vh-8rem)] rounded-xl rounded-br-2xl border-2 bg-white flex flex-col overflow-hidden relative transition-shadow duration-300",
-          explanationPanelHighlight ? "border-blue-400 shadow-[0_0_0_3px_rgba(59,130,246,0.25)]" : "border-gray-200 shadow-none"
-        )}
-        style={{ width: panelWidth, minWidth: panelWidth }}
-      >
-        {/* Resize handle - drag left edge */}
+      <>
+        {/* Mobile backdrop */}
         <div
-          onMouseDown={handleResizeStart}
-          className="absolute left-0 top-0 bottom-0 w-3 cursor-col-resize z-10 flex items-center justify-center rounded-l-xl hover:bg-gray-100 transition-colors border-r border-transparent hover:border-gray-200"
-          title="Drag to resize"
-          aria-label="Resize explanation panel"
+          className="fixed inset-0 bg-black/20 z-40 sm:hidden"
+          onClick={() => setSidebarVisible(false)}
+        />
+        <div
+          className={cn(
+            // Mobile: full-screen modal from bottom
+            "fixed inset-x-0 bottom-0 top-16 z-50 sm:z-auto",
+            // Desktop: side panel
+            "sm:relative sm:inset-auto sm:shrink-0 sm:self-end sm:mb-4 sm:mr-4 sm:min-h-[360px] sm:max-h-[calc(100vh-8rem)]",
+            // Common styles
+            "rounded-t-2xl sm:rounded-xl sm:rounded-br-2xl border-2 bg-white flex flex-col overflow-hidden transition-shadow duration-300",
+            explanationPanelHighlight ? "border-blue-400 shadow-[0_0_0_3px_rgba(59,130,246,0.25)]" : "border-gray-200 shadow-none",
+            // Desktop width
+            "sm:w-96"
+          )}
         >
-          <GripVertical className="h-4 w-4 text-gray-400" />
-        </div>
-        <div className="flex-1 flex flex-col min-w-0 pl-3">
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4 text-gray-500" />
-            <span className="text-base font-semibold text-gray-900">Explanation</span>
-          </div>
-          <button
-            onClick={() => setSidebarVisible(false)}
-            className="h-7 w-7 rounded flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Hide explanation panel"
+          {/* Resize handle - desktop only */}
+          <div
+            onMouseDown={handleResizeStart}
+            className="hidden sm:flex absolute left-0 top-0 bottom-0 w-3 cursor-col-resize z-10 items-center justify-center rounded-l-xl hover:bg-gray-100 transition-colors border-r border-transparent hover:border-gray-200"
+            title="Drag to resize"
+            aria-label="Resize explanation panel"
           >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
+          {/* Mobile drag handle */}
+          <div className="sm:hidden flex justify-center py-2">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+          <div className="flex-1 flex flex-col min-w-0 sm:pl-3">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-gray-500" />
+              <span className="text-base font-semibold text-gray-900">Explanation</span>
+            </div>
+            <button
+              onClick={() => setSidebarVisible(false)}
+              className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg sm:rounded flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              aria-label="Hide explanation panel"
+            >
+              <X className="h-5 w-5 sm:h-4 sm:w-4" />
+            </button>
+          </div>
 
         <div className="flex-1 overflow-auto p-4 min-h-0">
           {selectedQuestionData && showResults[selectedQuestionData.id] ? (
@@ -896,6 +917,7 @@ export function MCQContent({ selectedFile, onAnswerQuestion, onBack }) {
         )}
         </div>
       </div>
+      </>
       )}
     </div>
   );
